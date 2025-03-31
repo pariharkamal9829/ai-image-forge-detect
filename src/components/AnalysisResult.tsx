@@ -1,16 +1,15 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { AlertTriangle, Check, X, Info, Sparkles, Fingerprint } from 'lucide-react';
+import { AlertTriangle, Check, X, Info, Sparkles, Fingerprint, Wand2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface AnalysisResultData {
   originalImage: string;
   score: number;
-  verdict: 'ai-generated' | 'manipulated' | 'authentic' | 'inconclusive';
+  verdict: 'ai-generated' | 'manipulated' | 'authentic' | 'inconclusive' | 'ai-enhanced';
   detectedFeatures: {
     name: string;
     description: string;
@@ -48,6 +47,13 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, className }) =>
           icon: <Check className="h-5 w-5" />,
           title: 'Likely Authentic',
           description: 'No significant signs of AI generation or manipulation detected.'
+        };
+      case 'ai-enhanced':
+        return {
+          color: 'bg-purple-500',
+          icon: <Wand2 className="h-5 w-5" />,
+          title: 'AI Enhanced',
+          description: 'This appears to be a real image enhanced or modified using AI tools.'
         };
       case 'inconclusive':
       default:
@@ -113,13 +119,13 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, className }) =>
           </div>
           
           <div>
-            <h3 className="text-lg font-medium mb-4">Visual Analysis</h3>
+            <h3 className="text-lg font-medium mb-4">Advanced Visual Analysis</h3>
             
             <div className="space-y-4">
               {result.heatmap && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Highlighted areas indicate potential manipulations or AI artifacts
+                    Multi-layer forensic analysis highlighting potential AI artifacts and manipulations
                   </p>
                   <div className="relative rounded-lg overflow-hidden border">
                     <img 
@@ -130,7 +136,7 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, className }) =>
                     <img 
                       src={result.heatmap} 
                       alt="Analysis Heatmap" 
-                      className="absolute top-0 left-0 w-full h-full opacity-60 mix-blend-multiply"
+                      className="absolute top-0 left-0 w-full h-full"
                     />
                   </div>
                 </div>
@@ -141,7 +147,7 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, className }) =>
         
         <div className="mt-6 pt-4 border-t border-border">
           <p className="text-sm text-muted-foreground">
-            <strong>Disclaimer:</strong> This analysis is for informational purposes only. Our detection methods provide an estimate based on known AI artifacts and manipulation patterns, but technology evolves rapidly and results may not be 100% accurate.
+            <strong>Research-Grade Analysis:</strong> This forensic assessment is based on state-of-the-art AI detection techniques including frequency analysis, GAN fingerprinting, and error level analysis. While our methods achieve high accuracy, emerging AI technologies may evade detection. This analysis should be considered as one forensic tool among many.
           </p>
         </div>
       </CardContent>
