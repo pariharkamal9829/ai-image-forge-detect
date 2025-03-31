@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -11,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, FileText, Image, Shield, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import PdfResult from '@/components/PdfResult';
+import { motion } from 'framer-motion'; // Import framer-motion for animations
+import ThemeToggle from '@/components/ThemeToggle';
 
 const Index = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -92,17 +93,29 @@ const Index = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-lightBackground dark:bg-darkBackground text-lightForeground dark:text-darkForeground">
       <Header />
-      
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <main className="flex-1 container py-6 md:py-12">
         <div className="max-w-3xl mx-auto mb-10 text-center">
-          <h2 className="text-3xl font-bold mb-3 bg-clip-text text-transparent bg-detector-gradient">
-            Research-Grade AI & Manipulation Detection
-          </h2>
-          <p className="text-lg text-muted-foreground">
+          <motion.h2 
+            className="text-3xl font-bold mb-3 bg-clip-text text-transparent bg-detector-gradient"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            AI & Manipulation Detection
+          </motion.h2>
+          <motion.p 
+            className="text-lg text-muted-foreground"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
             Upload an image or PDF and our state-of-the-art AI will analyze it using multiple forensic techniques.
-          </p>
+          </motion.p>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-6 mb-8">
@@ -136,14 +149,19 @@ const Index = () => {
                   size="lg"
                 >
                   {isAnalyzing ? (
-                    <>
+                    <motion.div 
+                      className="flex items-center"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, repeat: Infinity, repeatType: "reverse" }}
+                    >
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Running Analysis...
-                    </>
+                    </motion.div>
                   ) : (
                     <>
                       <Shield className="mr-2 h-4 w-4" />
-                      Analyze with AI
+                      Analyze
                     </>
                   )}
                 </Button>
@@ -157,11 +175,28 @@ const Index = () => {
           
           <div className="lg:col-span-5">
             {imageResult && fileType === 'image' ? (
-              <AnalysisResult result={imageResult} />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <AnalysisResult result={imageResult} />
+              </motion.div>
             ) : pdfResult && fileType === 'pdf' ? (
-              <PdfResult result={pdfResult} />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <PdfResult result={pdfResult} />
+              </motion.div>
             ) : (
-              <div className="h-full flex items-center justify-center border border-dashed rounded-lg py-20 px-6 text-center bg-white">
+              <motion.div
+                className="h-full flex items-center justify-center border border-dashed rounded-lg py-20 px-6 text-center bg-white"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
                 <div className="max-w-md">
                   <div className="mx-auto w-16 h-16 mb-6 rounded-full bg-primary/10 flex items-center justify-center">
                     <Shield className="h-8 w-8 text-primary" />
@@ -207,7 +242,7 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
           </div>
         </div>
