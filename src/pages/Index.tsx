@@ -5,70 +5,89 @@ import Footer from '@/components/Footer';
 import ImageUploader from '@/components/ImageUploader';
 import AnalysisResult, { AnalysisResultData } from '@/components/AnalysisResult';
 import { analyzeImage } from '@/services/imageAnalysis';
+import { analyzePdf, PdfAnalysisResultData } from '@/services/pdfAnalysis';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, FileText, Image, Shield, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
+import PdfResult from '@/components/PdfResult';
 
 const Index = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [result, setResult] = useState<AnalysisResultData | null>(null);
+  const [imageResult, setImageResult] = useState<AnalysisResultData | null>(null);
+  const [pdfResult, setPdfResult] = useState<PdfAnalysisResultData | null>(null);
   const [activeTab, setActiveTab] = useState<string>('image');
+  const [fileType, setFileType] = useState<'image' | 'pdf'>('image');
 
-  const handleImageUploaded = (file: File, preview: string) => {
+  const handleFileUploaded = (file: File, preview: string, type: 'image' | 'pdf') => {
     setSelectedFile(file);
     setPreviewUrl(preview);
-    setResult(null);
+    setFileType(type);
+    setImageResult(null);
+    setPdfResult(null);
   };
 
   const handleAnalyze = async () => {
     if (!selectedFile) {
-      toast.error('Please upload an image before analyzing');
+      toast.error('Please upload a file before analyzing');
       return;
     }
 
     try {
       setIsAnalyzing(true);
-      const analysisResult = await analyzeImage(selectedFile);
-      setResult(analysisResult);
       
-      // Show a notification based on the verdict
-      switch (analysisResult.verdict) {
-        case 'ai-generated':
-          toast.warning('Analysis indicates this image was AI-generated', {
-            description: `Confidence: ${analysisResult.score.toFixed(1)}%`
-          });
-          break;
-        case 'manipulated':
-          toast.error('Image manipulation detected', {
-            description: `Confidence: ${analysisResult.score.toFixed(1)}%`
-          });
-          break;
-        case 'authentic':
-          toast.success('No signs of manipulation detected', {
-            description: `Confidence: ${analysisResult.score.toFixed(1)}%`
-          });
-          break;
-        case 'ai-enhanced':
-          toast.info('This appears to be an AI-enhanced image', {
-            description: `Confidence: ${analysisResult.score.toFixed(1)}%`
-          });
-          break;
-        case 'inconclusive':
-          toast.info('Analysis results are inconclusive', {
-            description: `Confidence: ${analysisResult.score.toFixed(1)}%`
-          });
-          break;
+      if (fileType === 'image') {
+        const analysisResult = await analyzeImage(selectedFile);
+        setImageResult(analysisResult);
+        
+        // Show a notification based on the verdict
+        showVerdict(analysisResult.verdict, analysisResult.score);
+      } else {
+        const analysisResult = await analyzePdf(selectedFile);
+        setPdfResult(analysisResult);
+        
+        // Show a notification based on the verdict
+        showVerdict(analysisResult.verdict, analysisResult.score);
       }
     } catch (error) {
       console.error('Analysis failed:', error);
       toast.error('Analysis failed', {
-        description: 'There was an error analyzing your image'
+        description: 'There was an error analyzing your file'
       });
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+  
+  const showVerdict = (verdict: string, score: number) => {
+    switch (verdict) {
+      case 'ai-generated':
+        toast.warning('Analysis indicates this file was AI-generated', {
+          description: `Confidence: ${score.toFixed(1)}%`
+        });
+        break;
+      case 'manipulated':
+        toast.error('File manipulation detected', {
+          description: `Confidence: ${score.toFixed(1)}%`
+        });
+        break;
+      case 'authentic':
+        toast.success('No signs of manipulation detected', {
+          description: `Confidence: ${score.toFixed(1)}%`
+        });
+        break;
+      case 'ai-enhanced':
+        toast.info('This appears to be an AI-enhanced file', {
+          description: `Confidence: ${score.toFixed(1)}%`
+        });
+        break;
+      case 'inconclusive':
+        toast.info('Analysis results are inconclusive', {
+          description: `Confidence: ${score.toFixed(1)}%`
+        });
+        break;
     }
   };
 
@@ -82,7 +101,7 @@ const Index = () => {
             Research-Grade AI & Manipulation Detection
           </h2>
           <p className="text-lg text-muted-foreground">
-            Upload an image and our state-of-the-art AI will analyze it using multiple forensic techniques.
+            Upload an image or PDF and our state-of-the-art AI will analyze it using multiple forensic techniques.
           </p>
         </div>
         
@@ -91,23 +110,22 @@ const Index = () => {
             <div className="sticky top-6 space-y-6">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid grid-cols-2 w-full">
-                  <TabsTrigger value="image">
+                  <TabsTrigger value="image" onClick={() => setFileType('image')}>
                     <Image className="mr-2 h-4 w-4" />
                     <span className="hidden sm:inline">Image</span>
                   </TabsTrigger>
-                  <TabsTrigger value="document" disabled>
+                  <TabsTrigger value="document" onClick={() => setFileType('pdf')}>
                     <FileText className="mr-2 h-4 w-4" />
                     <span className="hidden sm:inline">PDF</span>
-                    <span className="ml-2 text-xs bg-muted text-muted-foreground px-1 py-0.5 rounded text-[10px]">
-                      Soon
-                    </span>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
               
               <ImageUploader 
-                onImageUploaded={handleImageUploaded} 
+                onImageUploaded={(file, preview) => handleFileUploaded(file, preview, 'image')}
+                onPdfUploaded={(file, preview) => handleFileUploaded(file, preview, 'pdf')}
                 isAnalyzing={isAnalyzing}
+                activeTab={activeTab}
               />
               
               <div className="flex flex-col gap-4">
@@ -138,8 +156,10 @@ const Index = () => {
           </div>
           
           <div className="lg:col-span-5">
-            {result ? (
-              <AnalysisResult result={result} />
+            {imageResult && fileType === 'image' ? (
+              <AnalysisResult result={imageResult} />
+            ) : pdfResult && fileType === 'pdf' ? (
+              <PdfResult result={pdfResult} />
             ) : (
               <div className="h-full flex items-center justify-center border border-dashed rounded-lg py-20 px-6 text-center bg-white">
                 <div className="max-w-md">
@@ -148,18 +168,22 @@ const Index = () => {
                   </div>
                   <h3 className="text-xl font-medium mb-3">AI Forensic Analysis</h3>
                   <p className="text-muted-foreground">
-                    Upload an image and click "Analyze" to detect if it's been AI-generated, enhanced, or manipulated.
+                    {fileType === 'image' ? 
+                      "Upload an image and click \"Analyze\" to detect if it's been AI-generated, enhanced, or manipulated." :
+                      "Upload a PDF and click \"Analyze\" to detect if it contains AI-generated text, forgeries, or manipulations."}
                   </p>
                   
                   <div className="mt-6 grid grid-cols-3 gap-3">
                     <div className="border rounded-lg p-3">
                       <div className="flex items-center justify-center mb-3">
                         <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-                          <Image className="h-4 w-4 text-orange-500" />
+                          {fileType === 'image' ? 
+                            <Image className="h-4 w-4 text-orange-500" /> : 
+                            <FileText className="h-4 w-4 text-orange-500" />}
                         </div>
                       </div>
                       <h4 className="text-sm font-medium">AI Generation</h4>
-                      <p className="text-xs text-muted-foreground">Detects images created by AI</p>
+                      <p className="text-xs text-muted-foreground">Detects AI-created content</p>
                     </div>
                     
                     <div className="border rounded-lg p-3">
@@ -169,7 +193,7 @@ const Index = () => {
                         </div>
                       </div>
                       <h4 className="text-sm font-medium">AI Enhanced</h4>
-                      <p className="text-xs text-muted-foreground">Identifies AI-modified real images</p>
+                      <p className="text-xs text-muted-foreground">Identifies AI-modified content</p>
                     </div>
                     
                     <div className="border rounded-lg p-3">
@@ -179,7 +203,7 @@ const Index = () => {
                         </div>
                       </div>
                       <h4 className="text-sm font-medium">Manipulations</h4>
-                      <p className="text-xs text-muted-foreground">Finds edited areas and forgeries</p>
+                      <p className="text-xs text-muted-foreground">Finds edits and forgeries</p>
                     </div>
                   </div>
                 </div>
@@ -198,7 +222,7 @@ const Index = () => {
                 </div>
                 <h4 className="text-lg font-medium mb-2">Deep Learning Analysis</h4>
                 <p className="text-muted-foreground">
-                  Uses neural networks trained on millions of images to identify GAN artifacts and AI generation patterns.
+                  Uses neural networks trained on millions of samples to identify GAN artifacts and AI generation patterns.
                 </p>
               </div>
               
@@ -208,7 +232,7 @@ const Index = () => {
                 </div>
                 <h4 className="text-lg font-medium mb-2">Frequency Analysis</h4>
                 <p className="text-muted-foreground">
-                  Analyzes image frequency domains to detect inconsistencies invisible to the human eye.
+                  Analyzes frequency domains to detect inconsistencies invisible to the human eye.
                 </p>
               </div>
               

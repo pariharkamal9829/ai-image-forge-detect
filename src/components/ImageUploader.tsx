@@ -1,171 +1,174 @@
 
-import React, { useState, useCallback } from 'react';
-import { Upload, FileImage, Loader2, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import React, { useCallback, useState } from 'react';
+import { FileText, Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 
 interface ImageUploaderProps {
   onImageUploaded: (file: File, preview: string) => void;
-  className?: string;
-  isAnalyzing?: boolean;
+  onPdfUploaded: (file: File, preview: string) => void;
+  isAnalyzing: boolean;
+  activeTab: string;
 }
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({ 
-  onImageUploaded,
-  className,
-  isAnalyzing = false 
+  onImageUploaded, 
+  onPdfUploaded,
+  isAnalyzing,
+  activeTab
 }) => {
-  const [dragActive, setDragActive] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
 
-  const handleDrag = useCallback((e: React.DragEvent) => {
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
+    setDragging(true);
   }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragging(false);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!dragging) {
+      setDragging(true);
+    }
+  }, [dragging]);
+
+  const processFile = useCallback((file: File) => {
+    setFileName(file.name);
+    
+    if (file.type.startsWith('image/')) {
+      // Handle image file
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const previewUrl = reader.result as string;
+        setPreview(previewUrl);
+        onImageUploaded(file, previewUrl);
+      };
+      reader.readAsDataURL(file);
+    } else if (file.type === 'application/pdf') {
+      // Handle PDF file
+      setPreview('/placeholder.svg');
+      onPdfUploaded(file, '/placeholder.svg');
+    } else {
+      // Handle unsupported file type
+      alert('Unsupported file type. Please upload an image or PDF file.');
+      clearSelection();
+    }
+  }, [onImageUploaded, onPdfUploaded]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    setDragging(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-      handleFile(file);
+      processFile(file);
     }
-  }, []);
+  }, [processFile]);
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    if (e.target.files && e.target.files[0]) {
+  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      handleFile(file);
+      processFile(file);
     }
-  }, []);
-
-  const handleFile = useCallback((file: File) => {
-    // Check if file is an image
-    if (!file.type.match('image.*')) {
-      toast.error('Please upload an image file (JPEG, PNG, etc.)');
-      return;
-    }
-
-    // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('File is too large! Please upload an image smaller than 10MB.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const previewUrl = e.target?.result as string;
-      setPreview(previewUrl);
-      setSelectedFile(file);
-      onImageUploaded(file, previewUrl);
-    };
-    reader.readAsDataURL(file);
-  }, [onImageUploaded]);
+  }, [processFile]);
 
   const clearSelection = useCallback(() => {
     setPreview(null);
-    setSelectedFile(null);
+    setFileName(null);
   }, []);
 
+  const isPdfActive = activeTab === 'document';
+  const acceptValue = isPdfActive ? ".pdf" : "image/*";
+
   return (
-    <Card className={cn("p-6", className)}>
+    <div className="w-full">
       {!preview ? (
-        <div 
+        <div
           className={cn(
-            "border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center text-center transition-all",
-            dragActive ? "border-primary bg-primary/5" : "border-muted-foreground/30",
-            isAnalyzing ? "opacity-50 pointer-events-none" : ""
+            "border-2 border-dashed rounded-lg p-6 transition-colors",
+            dragging ? "border-primary bg-primary/5" : "border-muted-foreground/20",
+            "flex flex-col items-center justify-center text-center"
           )}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
           onDrop={handleDrop}
         >
-          <div className="w-16 h-16 mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-            <Upload className="h-8 w-8 text-primary" />
+          <input
+            type="file"
+            id="file-upload"
+            className="hidden"
+            accept={acceptValue}
+            onChange={handleFileInputChange}
+            disabled={isAnalyzing}
+          />
+          
+          <div className="mb-4 bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center">
+            {isPdfActive ? (
+              <FileText className="h-6 w-6 text-primary" />
+            ) : (
+              <Upload className="h-6 w-6 text-primary" />
+            )}
           </div>
-          <h3 className="text-lg font-medium mb-2">Upload an image to analyze</h3>
-          <p className="text-sm text-muted-foreground mb-6 max-w-md">
-            Drag and drop an image here, or click to browse. We'll analyze it for AI-generated content or manipulations.
+          
+          <label
+            htmlFor="file-upload"
+            className="font-medium text-sm cursor-pointer text-primary hover:text-primary/80"
+          >
+            Click to upload
+          </label>
+          
+          <p className="mt-1 text-xs text-muted-foreground">
+            or drag and drop
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button 
-              disabled={isAnalyzing}
-              className="relative overflow-hidden"
-              onClick={() => document.getElementById('file-upload')?.click()}
-            >
-              <FileImage className="mr-2 h-4 w-4" />
-              Select Image File
-            </Button>
-            <input 
-              id="file-upload"
-              type="file"
-              className="hidden"
-              accept="image/*"
-              onChange={handleChange}
-              disabled={isAnalyzing}
-            />
-          </div>
-          <p className="mt-4 text-xs text-muted-foreground">
-            Supports JPEG, PNG, WebP, GIF (non-animated) up to 10MB
+          <p className="mt-3 text-xs text-muted-foreground">
+            {isPdfActive ? 
+              "PDF (max 10MB)" : 
+              "PNG, JPG, WEBP (max 5MB)"}
           </p>
         </div>
       ) : (
-        <div className="relative">
-          {isAnalyzing && (
-            <div className="absolute inset-0 bg-background/50 flex items-center justify-center rounded-lg z-10">
-              <div className="flex flex-col items-center gap-2">
-                <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                <p className="text-sm font-medium">Analyzing image...</p>
-              </div>
-            </div>
-          )}
-          <div className="relative mb-4">
-            <button 
-              onClick={clearSelection}
-              className="absolute top-2 right-2 p-1 bg-background/80 rounded-full hover:bg-background transition-colors"
-              disabled={isAnalyzing}
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <img 
-              src={preview} 
-              alt="Preview" 
-              className="w-full h-auto max-h-[50vh] object-contain rounded-lg" 
-            />
+        <div className="border rounded-lg overflow-hidden bg-white">
+          <div className="flex items-center justify-between px-3 py-2 bg-muted/30 border-b">
+            <span className="text-xs truncate max-w-[180px]">{fileName}</span>
+            {!isAnalyzing && (
+              <button
+                type="button"
+                onClick={clearSelection}
+                className="text-muted-foreground hover:text-destructive"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm font-medium">{selectedFile?.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {selectedFile && (selectedFile.size / 1024 / 1024).toFixed(2)} MB
-              </p>
-            </div>
-            <Button
-              onClick={() => document.getElementById('file-upload')?.click()}
-              variant="outline"
-              size="sm"
-              disabled={isAnalyzing}
-            >
-              Change Image
-            </Button>
+          
+          <div className="relative aspect-video bg-black/5 flex items-center justify-center">
+            {isPdfActive ? (
+              <div className="flex flex-col items-center justify-center text-muted-foreground">
+                <FileText className="h-12 w-12 mb-2" />
+                <span className="text-xs">PDF Document</span>
+              </div>
+            ) : (
+              <img
+                src={preview}
+                alt="Upload preview"
+                className="object-contain w-full h-full"
+              />
+            )}
           </div>
         </div>
       )}
-    </Card>
+    </div>
   );
 };
 
