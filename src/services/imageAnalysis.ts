@@ -26,31 +26,31 @@ export async function analyzeImage(file: File): Promise<AnalysisResultData> {
           name: 'GAN Fingerprint Detection',
           description: 'Identified characteristic patterns produced by GAN architectures',
           confidence: 98.3,
-          type: 'artifact'
+          type: 'artifact' as const
         },
         {
           name: 'Diffusion Model Artifacts',
           description: 'Detected noise patterns typical of diffusion-based image generation',
           confidence: 96.5,
-          type: 'artifact'
+          type: 'artifact' as const
         },
         {
           name: 'Transformer Self-Attention Patterns',
           description: 'Identified self-attention patterns used in transformer-based image generation',
           confidence: 97.8,
-          type: 'artifact'
+          type: 'artifact' as const
         },
         {
           name: 'Frequency Analysis Anomalies',
           description: 'Fourier transform analysis reveals unnatural frequency distributions',
           confidence: 95.2,
-          type: 'artifact'
+          type: 'artifact' as const
         },
         {
           name: 'Natural Elements',
           description: 'Some aspects of the image appear natural, likely used as reference',
           confidence: 22.7,
-          type: 'authentic'
+          type: 'authentic' as const
         }
       ]
     },
@@ -62,31 +62,31 @@ export async function analyzeImage(file: File): Promise<AnalysisResultData> {
           name: 'Error Level Analysis',
           description: 'Inconsistent error levels detected in compressed regions',
           confidence: 94.7,
-          type: 'manipulation'
+          type: 'manipulation' as const
         },
         {
           name: 'JPEG Ghost Detection',
           description: 'Multiple compression signatures indicate manipulation',
           confidence: 92.9,
-          type: 'manipulation'
+          type: 'manipulation' as const
         },
         {
           name: 'Copy-Move Forgery',
           description: 'Detected duplicated regions with slight modifications',
           confidence: 98.1,
-          type: 'manipulation'
+          type: 'manipulation' as const
         },
         {
           name: 'Adversarial Perturbations',
           description: 'Subtle pixel-level changes detected in key areas',
           confidence: 89.5,
-          type: 'manipulation'
+          type: 'manipulation' as const
         },
         {
           name: 'Original Elements',
           description: 'Parts of the image appear to be from the original source',
           confidence: 65.3,
-          type: 'authentic'
+          type: 'authentic' as const
         }
       ]
     },
@@ -98,31 +98,31 @@ export async function analyzeImage(file: File): Promise<AnalysisResultData> {
           name: 'Natural Noise Pattern',
           description: 'Sensor noise patterns consistent with authentic camera images',
           confidence: 98.7,
-          type: 'authentic'
+          type: 'authentic' as const
         },
         {
           name: 'Consistent Metadata',
           description: 'Image metadata aligns with claimed source and parameters',
           confidence: 99.3,
-          type: 'authentic'
+          type: 'authentic' as const
         },
         {
           name: 'Natural Light Physics',
           description: 'Light interactions follow expected physical properties',
           confidence: 97.9,
-          type: 'authentic'
+          type: 'authentic' as const
         },
         {
           name: 'Optical Aberration Analysis',
           description: 'Lens distortions match expected camera characteristics',
           confidence: 99.5,
-          type: 'authentic'
+          type: 'authentic' as const
         },
         {
           name: 'Potential Compression Artifacts',
           description: 'Minor artifacts detected, but consistent with normal compression',
           confidence: 12.8,
-          type: 'artifact'
+          type: 'artifact' as const
         }
       ]
     },
@@ -134,31 +134,31 @@ export async function analyzeImage(file: File): Promise<AnalysisResultData> {
           name: 'Mixed Analysis Signals',
           description: 'Conflicting indicators between authentic and artificial elements',
           confidence: 68.5,
-          type: 'artifact'
+          type: 'artifact' as const
         },
         {
           name: 'Insufficient Reference Data',
           description: 'Limited comparative data for this specific image type',
           confidence: 53.7,
-          type: 'authentic'
+          type: 'authentic' as const
         },
         {
           name: 'Potential Modifications',
           description: 'Some areas suggest modifications but confidence is low',
           confidence: 61.9,
-          type: 'manipulation'
+          type: 'manipulation' as const
         },
         {
           name: 'Advanced Adversarial Techniques',
           description: 'Possible use of anti-forensic methods detected',
           confidence: 58.6,
-          type: 'artifact'
+          type: 'artifact' as const
         },
         {
           name: 'Natural Elements',
           description: 'Several elements appear natural and consistent',
           confidence: 73.4,
-          type: 'authentic'
+          type: 'authentic' as const
         }
       ]
     },
@@ -170,31 +170,31 @@ export async function analyzeImage(file: File): Promise<AnalysisResultData> {
           name: 'Real Image Foundation',
           description: 'Base image appears to be an authentic photograph',
           confidence: 89.4,
-          type: 'authentic'
+          type: 'authentic' as const
         },
         {
           name: 'AI-Based Enhancements',
           description: 'Detected significant AI-based edits and enhancements',
           confidence: 94.8,
-          type: 'artifact'
+          type: 'artifact' as const
         },
         {
           name: 'Style Transfer Artifacts',
           description: 'Neural style transfer patterns identified',
           confidence: 93.2,
-          type: 'artifact'
+          type: 'artifact' as const
         },
         {
           name: 'Super-Resolution Upscaling',
           description: 'Evidence of AI-based resolution enhancement',
           confidence: 91.7,
-          type: 'manipulation'
+          type: 'manipulation' as const
         },
         {
           name: 'Semantic Manipulations',
           description: 'AI-guided semantic modifications to original content',
           confidence: 90.5,
-          type: 'manipulation'
+          type: 'manipulation' as const
         }
       ]
     }
